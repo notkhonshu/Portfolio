@@ -139,6 +139,13 @@ const initPortfolio = () => {
     measure();
     document.fonts?.ready.then(measure);
 };
+const PROJECT_BASE = '/projects/';
+const projectPath = (slug) => `${PROJECT_BASE}${encodeURIComponent(slug)}`;
+const slugFromPath = () => {
+    const { pathname } = window.location;
+    if (!pathname.startsWith(PROJECT_BASE)) return null;
+    return decodeURIComponent(pathname.slice(PROJECT_BASE.length).replace(/\/$/, '')) || null;
+};
 
 const initDetail = () => {
     const root = document.querySelector('[data-detail]');
@@ -149,12 +156,13 @@ const initDetail = () => {
     const counter = root.querySelector('[data-detail-counter]');
     const items = [...root.querySelectorAll('[data-detail-item]')];
     const slugs = items.map((item) => item.dataset.detailItem);
+    const homeTitle = root.dataset.homeTitle || document.title;
     let index = -1;
     let trigger = null;
 
     const pad = (number) => String(number).padStart(2, '0');
 
-    const show = (slug) => {
+    const render = (slug) => {
         const next = slugs.indexOf(slug);
         if (next < 0) return false;
         index = next;
@@ -164,26 +172,48 @@ const initDetail = () => {
         counter.textContent = `(Project ${pad(index + 1)} / ${pad(items.length)})`;
         panel.dataset.full = 'false';
         scroller.scrollTop = 0;
-        history.replaceState(null, '', `#${slugs[index]}`);
+        document.title = items[index].dataset.detailTitle || homeTitle;
         return true;
     };
 
-    const open = (slug, source = null) => {
-        if (!show(slug)) return;
+    const reveal = (slug, source = null) => {
+        if (!render(slug)) return false;
         trigger = source;
         root.inert = false;
         root.dataset.open = 'true';
         document.documentElement.classList.add('overflow-hidden');
         panel.focus({ preventScroll: true });
+        return true;
     };
 
-    const close = () => {
+    const hide = () => {
         if (root.dataset.open !== 'true') return;
         root.dataset.open = 'false';
         root.inert = true;
         document.documentElement.classList.remove('overflow-hidden');
-        history.replaceState(null, '', window.location.pathname + window.location.search);
+        document.title = homeTitle;
         trigger?.focus({ preventScroll: true });
+        trigger = null;
+    };
+
+    const open = (slug, source) => {
+        if (!reveal(slug, source)) return;
+        history.pushState({ project: slug, pushed: true }, '', projectPath(slug));
+    };
+
+    const close = () => {
+        if (root.dataset.open !== 'true') return;
+        if (history.state?.pushed) {
+            history.back();
+        } else {
+            hide();
+            history.replaceState(null, '', '/');
+        }
+    };
+
+    const go = (slug) => {
+        if (!render(slug)) return;
+        history.replaceState({ project: slug, pushed: history.state?.pushed === true }, '', projectPath(slug));
     };
 
     scroller.addEventListener(
@@ -197,8 +227,10 @@ const initDetail = () => {
 
     document.addEventListener('click', (event) => {
         if (event.target.closest('[data-lightbox]')) return;
+
         const opener = event.target.closest('[data-project-open]');
         if (opener) {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             event.preventDefault();
             open(opener.dataset.projectOpen, opener);
             return;
@@ -208,7 +240,7 @@ const initDetail = () => {
             return;
         }
         if (event.target.closest('[data-detail-next]')) {
-            show(slugs[(index + 1) % slugs.length]);
+            go(slugs[(index + 1) % slugs.length]);
         }
     });
 
@@ -216,8 +248,25 @@ const initDetail = () => {
         if (event.key === 'Escape' && !lightboxOpen()) close();
     });
 
-    const initial = window.location.hash.slice(1);
-    if (slugs.includes(initial)) open(initial);
+    window.addEventListener('popstate', () => {
+        const slug = slugFromPath();
+        if (slug && slugs.includes(slug)) {
+            reveal(slug);
+        } else {
+            hide();
+        }
+    });
+
+    const fromPath = slugFromPath();
+    const fromHash = window.location.hash.slice(1);
+
+    if (fromPath && slugs.includes(fromPath)) {
+        history.replaceState({ project: fromPath, pushed: false }, '', projectPath(fromPath));
+        reveal(fromPath);
+    } else if (slugs.includes(fromHash)) {
+        history.replaceState({ project: fromHash, pushed: false }, '', projectPath(fromHash));
+        reveal(fromHash);
+    }
 };
 
 const initLightbox = () => {

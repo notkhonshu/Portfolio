@@ -2,7 +2,7 @@
     $projects = $section_data['data'];
 @endphp
 
-<section id="portfolio" data-portfolio class="relative isolate h-svh overflow-hidden text-foreground">
+<section id="portfolio" data-portfolio class="relative isolate h-svh touch-pan-x touch-pan-y overflow-hidden overscroll-none text-foreground">
     <div data-portfolio-track class="absolute inset-x-0 top-0 flex flex-col items-center gap-14 pt-[22svh] will-change-transform sm:inset-x-auto sm:inset-y-0 sm:left-0 sm:w-max sm:flex-row sm:gap-card-gap sm:pl-gutter sm:pt-0">
         @foreach ($projects as $project)
             @include('components.cards.part1', ['project' => $project])

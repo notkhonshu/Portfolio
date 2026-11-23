@@ -76,7 +76,7 @@ return [
         ],
         [
             'title' => 'Bali Guides Adventure',
-            'slug' => 'ali-guides-adventure',
+            'slug' => 'bali-guides-adventure',
             'project_type' => 'Travel & Tour Website',
             'client' => 'Bali Guides Adventure',
             'location' => 'Singapadu',

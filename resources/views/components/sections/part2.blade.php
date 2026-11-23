@@ -1,5 +1,6 @@
 @php
     $projects = config('data.project', []);
+    $activeSlug = $activeProject['slug'] ?? null;
     $meta = [
         'Client' => 'client',
         'Type' => 'project_type',
@@ -10,7 +11,7 @@
     ];
 @endphp
 
-<div data-detail data-open="false" inert class="group/detail pointer-events-none fixed inset-0 z-(--z-panel) data-[open=true]:pointer-events-auto">
+<div data-detail data-open="{{ $activeSlug ? 'true' : 'false' }}" data-home-title="{{ config('metadata.title') }}" @unless ($activeSlug) inert @endunless class="group/detail pointer-events-none fixed inset-0 z-(--z-panel) data-[open=true]:pointer-events-auto">
     <div data-detail-backdrop class="absolute inset-0 bg-brand-900/60 opacity-0 transition-opacity duration-(--duration-slow) ease-smooth group-data-[open=true]/detail:opacity-100"></div>
 
     <div data-detail-panel data-full="false" role="dialog" aria-modal="true" aria-label="Project detail" tabindex="-1" class="panel absolute inset-x-0 bottom-0 top-[clamp(3rem,9svh,6rem)] flex translate-y-full flex-col overflow-hidden bg-panel-alt outline-none transition-[translate,top,border-radius] duration-(--duration-slow) ease-smooth group-data-[open=true]/detail:translate-y-0 data-[full=true]:top-0 data-[full=true]:rounded-t-none">
@@ -21,9 +22,8 @@
 
         <div data-detail-scroll class="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             @foreach ($projects as $project)
-                <article data-detail-item="{{ $project['slug'] }}" hidden class="mx-auto max-w-site px-gutter pb-section pt-8">
+                <article data-detail-item="{{ $project['slug'] }}" data-detail-title="{{ $projectTitles[$project['slug']] ?? '' }}" @if ($project['slug'] !== $activeSlug) hidden @endif class="mx-auto max-w-site px-gutter pb-section pt-8">
                     <h2 class="font-display text-5xl font-extrabold">{{ $project['title'] }}</h2>
-
                     <dl class="mt-8 grid grid-cols-2 gap-6 border-t border-panel-line pt-5 sm:grid-cols-3 lg:grid-cols-6">
                         @foreach ($meta as $label => $key)
                             <div>
@@ -32,9 +32,7 @@
                             </div>
                         @endforeach
                     </dl>
-
-                    <img src="{{ asset($project['feature_images']) }}" alt="{{ $project['title'] }}" loading="lazy" decoding="async" class="mt-10 aspect-16/8 w-full rounded-card object-cover object-top">
-
+                    <img src="{{ asset($project['feature_images']) }}" alt="{{ $project['title'] }}" loading="lazy" decoding="async" class="mt-10 aspect-16/8 w-full rounded-card object-cover object-center">
                     <div class="mt-12 grid gap-8 sm:grid-cols-2">
                         <div>
                             <h3 class="label mb-3 text-panel-foreground/70">Overview</h3>

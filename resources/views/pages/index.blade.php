@@ -1,5 +1,19 @@
 @extends('layouts.app')
 
+@section('title', $seo['title'] ?? config('metadata.title'))
+@section('description', $seo['description'] ?? config('metadata.description'))
+
+@isset($seo['canonical'])
+    @section('canonical', $seo['canonical'])
+    @section('keywords', $seo['keywords'])
+    @section('og_image', $seo['image'])
+    @section('og_image_alt', $seo['image_alt'])
+
+    @push('head')
+        <script type="application/ld+json">{!! json_encode($seo['schema'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
+    @endpush
+@endisset
+
 @section('content')
     @include('components.sections.part1', [
         'section_data' => [
@@ -13,18 +27,18 @@
         'section_data' => [
             'label' => 'About',
             'name' => config('socials.names'),
-            'headline' => 'A frontend web developer building fast, considered websites for hospitality and travel brands.',
-            'intro' => 'I’m Angga Aditya, a frontend web developer working with hotels, resorts, spas and tour operators in Bali. I turn designs into clean, responsive and accessible interfaces that make people want to book, visit and come back.',
+            'headline' => 'A web developer building fast, thoughtful websites for businesses that want to be found and remembered.',
+            'intro' => 'I’m Angga Aditya, a web developer based in Bali. I build clean, responsive and accessible websites for brands, businesses and agencies, from company profiles and landing pages to booking and e-commerce experiences.',
             'paragraphs' => [
                 'I started building websites because I enjoy seeing an idea turn into something people can actually use. Over time I focused on the frontend, where structure, typography and motion come together to shape how a brand feels online.',
                 'I care about details that are easy to miss: spacing that feels right, pages that load quickly, layouts that hold up on every screen, and code that the next developer will be glad to open.',
             ],
             'photo' => 'assets/img/static/landing/my-foto.jpeg',
-            'photo_alt' => 'Portrait of Angga',
+            'photo_alt' => 'Angga Aditya, web developer based in Bali',
             'facts' => [
                 [
                     'label' => 'Role', 
-                    'value' => 'Frontend Web Developer'
+                    'value' => 'Web Developer'
                 ],
                 [
                     'label' => 'Based in', 
@@ -32,7 +46,7 @@
                 ],
                 [
                     'label' => 'Focus', 
-                    'value' => 'Hospitality, spa & travel websites'
+                    'value' => 'Business websites, landing pages & web apps'
                 ],
             ],
             'services_label' => 'What I do',
@@ -75,7 +89,7 @@
                 ],
                 [
                     'years' => '2024 — 2025', 
-                    'role' => 'Internship Frontend Web Developer', 
+                    'role' => 'Internship Web Developer', 
                     'company' => 'PT. Bali Pustaka Digital'
                 ],
             ],

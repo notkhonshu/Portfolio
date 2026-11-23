@@ -1,6 +1,4 @@
-<a href="#{{ $project['slug'] }}"
-   data-project-open="{{ $project['slug'] }}"
-   class="group block w-(--card-width-mobile) shrink-0 sm:w-(--card-width) sm:odd:-mt-[12svh] sm:even:mt-[12svh]">
+<a href="{{ route('projects.show', $project['slug']) }}" data-project-open="{{ $project['slug'] }}" class="group block w-(--card-width-mobile) shrink-0 sm:w-(--card-width) sm:odd:-mt-[12svh] sm:even:mt-[12svh]">
     <div class="aspect-3/4 overflow-hidden rounded-card bg-brand-900 ring-1 ring-inset ring-line">
         <img src="{{ asset($project['feature_images']) }}"
              alt="{{ $project['title'] }}"
