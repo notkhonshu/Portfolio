@@ -34,6 +34,15 @@
 <meta name="twitter:image" content="@yield('og_image', asset(config('metadata.og_image')))">
 <meta name="twitter:image:alt" content="@yield('og_image_alt', config('metadata.og_image_alt'))">
 
+{{-- GTM --}}
+<meta name="google-site-verification" content="uHxgWO7sFDjbTNm_oW62wVUkk4hF5bahkbCLC-ICCWo">
+<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-P236PLLK"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+</script>
+
 {{-- Favicon --}}
 <link rel="icon" href="{{ asset('assets/img/metadata/favicon/icon.ico') }}">
 
