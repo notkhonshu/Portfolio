@@ -1,6 +1,8 @@
 const desktop = window.matchMedia('(min-width: 45rem)');
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+const lightboxOpen = () => document.querySelector('[data-lightbox][data-open="true"]') !== null;
+
 const initPortfolio = () => {
     const section = document.querySelector('[data-portfolio]');
     const track = section?.querySelector('[data-portfolio-track]');
@@ -194,6 +196,7 @@ const initDetail = () => {
     );
 
     document.addEventListener('click', (event) => {
+        if (event.target.closest('[data-lightbox]')) return;
         const opener = event.target.closest('[data-project-open]');
         if (opener) {
             event.preventDefault();
@@ -210,11 +213,81 @@ const initDetail = () => {
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') close();
+        if (event.key === 'Escape' && !lightboxOpen()) close();
     });
 
     const initial = window.location.hash.slice(1);
     if (slugs.includes(initial)) open(initial);
+};
+
+const initLightbox = () => {
+    const root = document.querySelector('[data-detail]');
+    const box = root?.querySelector('[data-lightbox]');
+    if (!root || !box) return;
+
+    const img = box.querySelector('[data-lightbox-img]');
+    const counter = box.querySelector('[data-lightbox-counter]');
+    const closeBtn = box.querySelector('[data-lightbox-close]');
+
+    let items = [];
+    let index = 0;
+    let opener = null;
+
+    const show = (i) => {
+        index = (i + items.length) % items.length;
+        const el = items[index];
+        img.src = el.dataset.src;
+        img.alt = el.dataset.alt;
+        counter.textContent = `${index + 1} / ${items.length}`;
+    };
+
+    const open = (list, i, trigger) => {
+        items = list;
+        opener = trigger;
+        show(i);
+        box.dataset.open = 'true';
+        closeBtn.focus({ preventScroll: true });
+    };
+
+    const close = (restoreFocus = true) => {
+        if (!lightboxOpen()) return;
+        box.dataset.open = 'false';
+        img.removeAttribute('src');
+        if (restoreFocus) opener?.focus({ preventScroll: true });
+    };
+
+    root.addEventListener('click', (event) => {
+        const item = event.target.closest('[data-gallery-item]');
+        if (!item) return;
+        const list = [...item.closest('[data-gallery]').querySelectorAll('[data-gallery-item]')];
+        open(list, list.indexOf(item), item);
+    });
+
+    box.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const target = event.target;
+        if (target.closest('[data-lightbox-prev]')) show(index - 1);
+        else if (target.closest('[data-lightbox-next]')) show(index + 1);
+        else if (target.closest('[data-lightbox-close]') || target.closest('[data-lightbox-backdrop]')) close();
+    });
+
+    window.addEventListener(
+        'keydown',
+        (event) => {
+            if (!lightboxOpen()) return;
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                close();
+            } else if (event.key === 'ArrowLeft') show(index - 1);
+            else if (event.key === 'ArrowRight') show(index + 1);
+        },
+        true,
+    );
+
+    new MutationObserver(() => {
+        if (root.dataset.open !== 'true') close(false);
+    }).observe(root, { attributes: true, attributeFilter: ['data-open'] });
 };
 
 const initAbout = () => {
@@ -258,7 +331,7 @@ const initAbout = () => {
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') close();
+        if (event.key === 'Escape' && !lightboxOpen()) close();
     });
 
     scroller.addEventListener(
@@ -275,4 +348,5 @@ const initAbout = () => {
 
 initAbout();
 initPortfolio();
+initLightbox();
 initDetail();
