@@ -139,12 +139,10 @@ const initPortfolio = () => {
     measure();
     document.fonts?.ready.then(measure);
 };
-const PROJECT_BASE = '/projects/';
-const projectPath = (slug) => `${PROJECT_BASE}${encodeURIComponent(slug)}`;
+const projectPath = (slug) => `/${encodeURIComponent(slug)}`;
 const slugFromPath = () => {
-    const { pathname } = window.location;
-    if (!pathname.startsWith(PROJECT_BASE)) return null;
-    return decodeURIComponent(pathname.slice(PROJECT_BASE.length).replace(/\/$/, '')) || null;
+    const path = window.location.pathname.replace(/^\/|\/$/g, '');
+    return path ? decodeURIComponent(path) : null;
 };
 
 const initDetail = () => {

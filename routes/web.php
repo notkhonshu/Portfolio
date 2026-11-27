@@ -6,8 +6,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/projects/{slug}', fn (string $slug) => redirect()->route('projects.show', $slug, 301))
     ->where('slug', '[a-z0-9-]+');
 
-Route::redirect('/projects', '/', 301);
-
 Route::controller(MainController::class)->group(function () {
     Route::get('/', 'index')->name('home');
 
