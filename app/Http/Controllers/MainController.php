@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Response;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
-use Carbon\Carbon;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 
@@ -14,6 +14,11 @@ class MainController extends Controller
     public function index(): View
     {
         return $this->page();
+    }
+
+    public function about(): View
+    {
+        return $this->page(about: true);
     }
 
     public function project(string $slug): View
@@ -27,10 +32,19 @@ class MainController extends Controller
 
     public function sitemap(): Response
     {
-        $lastmod = Carbon::createFromTimestamp(filemtime(config_path('data.php')));
+        $dataTime = filemtime(config_path('data.php'));
+        $lastmod  = Carbon::createFromTimestamp($dataTime);
+        $aboutMod = Carbon::createFromTimestamp(
+            max($dataTime, filemtime(resource_path('views/pages/index.blade.php')))
+        );
 
         $sitemap = Sitemap::create()
-            ->add(Url::create(url('/'))->setLastModificationDate($lastmod));
+            ->add(Url::create(url('/'))->setLastModificationDate($lastmod))
+            ->add(
+                Url::create(route('about'))
+                    ->setLastModificationDate($aboutMod)
+                    ->addImage($this->aboutImage(), '', '', $this->aboutImageAlt())
+            );
 
         foreach ($this->projects() as $project) {
             $url = Url::create(route('projects.show', $project['slug']))
@@ -50,11 +64,17 @@ class MainController extends Controller
         ]);
     }
 
-    private function page(?array $project = null): View
+    private function page(?array $project = null, bool $about = false): View
     {
         return view('pages.index', [
             'activeProject' => $project,
-            'seo'           => $project ? $this->projectSeo($project) : [],
+            'activeAbout'   => $about,
+            'seo'           => match (true) {
+                $project !== null => $this->projectSeo($project),
+                $about            => $this->aboutSeo(),
+                default           => [],
+            },
+            'aboutTitle'    => $this->aboutTitle(),
             'projectTitles' => $this->projects()->mapWithKeys(
                 fn (array $item) => [$item['slug'] => $this->projectTitle($item)]
             ),
@@ -69,6 +89,75 @@ class MainController extends Controller
     private function projectTitle(array $project): string
     {
         return "{$project['title']} — {$project['project_type']} | " . config('metadata.author');
+    }
+
+    private function aboutTitle(): string
+    {
+        return 'About Me — Web Developer in ' . config('metadata.region', 'Bali') . ' | ' . config('metadata.author');
+    }
+
+    private function aboutImage(): string
+    {
+        return asset(config('metadata.photo', config('metadata.og_image')));
+    }
+
+    private function aboutImageAlt(): string
+    {
+        return config('metadata.author') . ', web developer based in ' . config('metadata.region', 'Bali');
+    }
+
+    private function aboutSeo(): array
+    {
+        $home        = url('/');
+        $url         = route('about');
+        $title       = $this->aboutTitle();
+        $author      = config('metadata.author');
+        $image       = $this->aboutImage();
+        $description = $this->excerpt(
+            "Meet {$author}, a web developer in " . config('metadata.region', 'Bali')
+            . ' building fast, responsive and accessible websites for businesses, brands and agencies.'
+        );
+
+        return [
+            'title'       => $title,
+            'description' => $description,
+            'keywords'    => implode(', ', [
+                "about {$author}",
+                'web developer bali',
+                'frontend web developer',
+                'laravel developer',
+                'wordpress elementor developer',
+            ]),
+            'canonical'   => $url,
+            'image'       => $image,
+            'image_alt'   => $this->aboutImageAlt(),
+            'schema'      => [
+                '@context' => 'https://schema.org',
+                '@graph'   => [
+                    [
+                        '@type'              => 'AboutPage',
+                        '@id'                => $url . '#webpage',
+                        'url'                => $url,
+                        'name'               => $title,
+                        'description'        => $description,
+                        'inLanguage'         => 'en',
+                        'isPartOf'           => ['@id' => $home . '#website'],
+                        'about'              => ['@id' => $home . '#person'],
+                        'mainEntity'         => ['@id' => $home . '#person'],
+                        'breadcrumb'         => ['@id' => $url . '#breadcrumb'],
+                        'primaryImageOfPage' => ['@type' => 'ImageObject', 'url' => $image],
+                    ],
+                    [
+                        '@type'           => 'BreadcrumbList',
+                        '@id'             => $url . '#breadcrumb',
+                        'itemListElement' => [
+                            ['@type' => 'ListItem', 'position' => 1, 'name' => 'Home', 'item' => $home],
+                            ['@type' => 'ListItem', 'position' => 2, 'name' => 'About', 'item' => $url],
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     private function projectSeo(array $project): array

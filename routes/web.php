@@ -21,6 +21,8 @@ Route::controller(MainController::class)->group(function () {
 
     Route::get('/sitemap.xml', 'sitemap')->name('sitemap');
 
+    Route::get('/about-me', 'about')->name('about');
+
     Route::get('/{slug}', 'project')
         ->where('slug', '[a-z0-9-]+')
         ->name('projects.show');

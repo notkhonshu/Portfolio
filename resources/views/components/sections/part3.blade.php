@@ -1,4 +1,9 @@
-<div data-about data-open="false" inert class="group/about pointer-events-none fixed inset-0 z-(--z-panel) data-[open=true]:pointer-events-auto">
+<div data-about
+     data-open="false"
+     data-home-title="{{ config('metadata.title') }}"
+     data-about-title="{{ $section_data['page_title'] ?? '' }}"
+     inert
+     class="group/about pointer-events-none fixed inset-0 z-(--z-panel) data-[open=true]:pointer-events-auto">
     <div data-about-backdrop class="absolute inset-0 bg-brand-900/60 opacity-0 transition-opacity duration-(--duration-slow) ease-smooth group-data-[open=true]/about:opacity-100"></div>
 
     <div id="aboutPanel"

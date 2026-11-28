@@ -3,6 +3,11 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 const lightboxOpen = () => document.querySelector('[data-lightbox][data-open="true"]') !== null;
 
+const syncLock = () => {
+    const anyOpen = document.querySelector('[data-detail][data-open="true"], [data-about][data-open="true"]') !== null;
+    document.documentElement.classList.toggle('overflow-hidden', anyOpen);
+};
+
 const initPortfolio = () => {
     const section = document.querySelector('[data-portfolio]');
     const track = section?.querySelector('[data-portfolio-track]');
@@ -95,7 +100,7 @@ const initPortfolio = () => {
     window.addEventListener(
         'wheel',
         (event) => {
-            if (event.target.closest('[data-detail]')) return;
+            if (event.target.closest('[data-detail], [data-about]')) return;
             nudge(event.deltaY);
         },
         { passive: true },
@@ -112,7 +117,7 @@ const initPortfolio = () => {
     window.addEventListener(
         'touchmove',
         (event) => {
-            if (event.target.closest('[data-detail]')) return;
+            if (event.target.closest('[data-detail], [data-about]')) return;
             const y = event.touches[0].clientY;
             nudge(touchY - y);
             touchY = y;
@@ -139,6 +144,7 @@ const initPortfolio = () => {
     measure();
     document.fonts?.ready.then(measure);
 };
+
 const projectPath = (slug) => `/${encodeURIComponent(slug)}`;
 const slugFromPath = () => {
     const path = window.location.pathname.replace(/^\/|\/$/g, '');
@@ -179,7 +185,7 @@ const initDetail = () => {
         trigger = source;
         root.inert = false;
         root.dataset.open = 'true';
-        document.documentElement.classList.add('overflow-hidden');
+        syncLock();
         panel.focus({ preventScroll: true });
         return true;
     };
@@ -188,7 +194,7 @@ const initDetail = () => {
         if (root.dataset.open !== 'true') return;
         root.dataset.open = 'false';
         root.inert = true;
-        document.documentElement.classList.remove('overflow-hidden');
+        syncLock();
         document.title = homeTitle;
         trigger?.focus({ preventScroll: true });
         trigger = null;
@@ -337,6 +343,10 @@ const initLightbox = () => {
     }).observe(root, { attributes: true, attributeFilter: ['data-open'] });
 };
 
+const ABOUT_SLUG = 'about-me';
+const aboutPath = `/${ABOUT_SLUG}`;
+const isAboutPath = () => slugFromPath() === ABOUT_SLUG;
+
 const initAbout = () => {
     const root = document.querySelector('[data-about]');
     const button = document.getElementById('aboutBtn');
@@ -344,34 +354,53 @@ const initAbout = () => {
 
     const panel = root.querySelector('[data-about-panel]');
     const scroller = root.querySelector('[data-about-scroll]');
+    const homeTitle = root.dataset.homeTitle || document.title;
+    const aboutTitle = root.dataset.aboutTitle || homeTitle;
 
-    const unlock = () => {
-        if (!document.querySelector('[data-detail][data-open="true"], [data-about][data-open="true"]')) {
-            document.documentElement.classList.remove('overflow-hidden');
-        }
-    };
-
-    const open = () => {
+    const reveal = () => {
         root.inert = false;
         root.dataset.open = 'true';
         panel.dataset.full = 'false';
         scroller.scrollTop = 0;
         button.setAttribute('aria-expanded', 'true');
-        document.documentElement.classList.add('overflow-hidden');
+        document.title = aboutTitle;
+        syncLock();
         panel.focus({ preventScroll: true });
     };
 
-    const close = () => {
+    const hide = () => {
         if (root.dataset.open !== 'true') return;
         root.dataset.open = 'false';
         root.inert = true;
         button.setAttribute('aria-expanded', 'false');
-        unlock();
+        document.title = homeTitle;
+        syncLock();
         button.focus({ preventScroll: true });
     };
 
+    const open = () => {
+        reveal();
+        history.pushState({ about: true, pushed: true }, '', aboutPath);
+    };
+
+    const close = () => {
+        if (root.dataset.open !== 'true') return;
+        if (history.state?.pushed) {
+            history.back();
+        } else {
+            hide();
+            history.replaceState(null, '', '/');
+        }
+    };
+
     button.setAttribute('aria-expanded', 'false');
-    button.addEventListener('click', () => (root.dataset.open === 'true' ? close() : open()));
+
+    button.addEventListener('click', (event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        if (root.dataset.open === 'true') close();
+        else open();
+    });
 
     root.addEventListener('click', (event) => {
         if (event.target.closest('[data-about-close]') || event.target.closest('[data-about-backdrop]')) close();
@@ -379,6 +408,14 @@ const initAbout = () => {
 
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && !lightboxOpen()) close();
+    });
+
+    window.addEventListener('popstate', () => {
+        if (isAboutPath()) {
+            if (root.dataset.open !== 'true') reveal();
+        } else {
+            hide();
+        }
     });
 
     scroller.addEventListener(
@@ -390,7 +427,10 @@ const initAbout = () => {
         { passive: true },
     );
 
-    if (window.location.hash === '#about') open();
+    if (isAboutPath() || window.location.hash === '#about') {
+        history.replaceState({ about: true, pushed: false }, '', aboutPath);
+        reveal();
+    }
 };
 
 initAbout();

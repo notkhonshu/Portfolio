@@ -3484,8 +3484,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2026-06-24T07:59:14+00:00",
-            "published-time": "2026-06-24T07:59:47+00:00"
+            "time": "2026-06-24T07:59:14+00:00"
         },
         {
             "name": "spatie/robots-txt",
@@ -8809,5 +8808,5 @@
         "php": "^8.3"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.11.0"
+    "plugin-api-version": "2.6.0"
 }

@@ -5,7 +5,7 @@
         </a>
 
         <nav class="contents sm:flex sm:items-center sm:gap-3" aria-label="Main navigation">
-            <button id="aboutBtn" type="button" class="btn pointer-events-auto col-start-1 row-start-1 justify-self-start px-4 py-2 font-mono text-label font-normal tracking-label uppercase hover:opacity-60 sm:col-auto sm:row-auto sm:justify-self-auto sm:px-5.5 sm:py-2.5" aria-haspopup="dialog" aria-controls="aboutPanel">About Me</button>
+            <a id="aboutBtn" href="{{ route('about') }}" class="btn pointer-events-auto col-start-1 row-start-1 justify-self-start px-4 py-2 font-mono text-label font-normal tracking-label uppercase hover:opacity-60 sm:col-auto sm:row-auto sm:justify-self-auto sm:px-5.5 sm:py-2.5" aria-haspopup="dialog" aria-controls="aboutPanel">About Me</a>
             <a href="{{ config('socials.contact.url_email')}}" class="btn btn-solid pointer-events-auto col-start-3 row-start-1 justify-self-end px-4 py-2 font-mono text-label font-normal tracking-label uppercase hover:opacity-60 sm:col-auto sm:row-auto sm:justify-self-auto sm:px-5.5 sm:py-2.5">Let’s talk</a>
         </nav>
     </header>
