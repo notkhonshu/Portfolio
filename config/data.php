@@ -137,7 +137,7 @@ return [
             'years' => '2026',
             'role' => 'Design & Development',
             'stack' => 'Laravel, Vite',
-            'link' => 'https://nimsseminyak.com/',
+            'link' => 'https://kailashsuites.com/',
             'feature_images' => 'assets/img/static/projects/kailash/1.jpg',
             'gallery' => [
                 'assets/img/static/projects/kailash/2.png',
